@@ -25,31 +25,32 @@ makeCacheMatrix <- function(x = matrix()) {
                 ## Cheks that matrix is stored.
                 
                 if (any(sapply(wm, function(y) identical(y, x)))) {
-                        mtrx <- NULL
-                        index <- sapply(wm, function(y) identical(y, x))
+                        pos <-  which((sapply(wm, function(y) identical(y, x)))==TRUE)
+                        mtrx <- wm[[pos]]
                 } else {
                         mtrx <- x
-                        index <- NULL
-                        wm[[length(wm) + 1]] <<- x
+                        pos <- length(wm) + 1
+                        wm[[pos]] <<- x
+                        wi[[pos]] <<- NA
                 }
         } else {
                 message("Please, enter a square matrix")
                 mtrx <- NULL
-                index <- NULL
+                pos <- NULL
         }
-                        
+        
         ## Retrieves matrix to calculate its inverse using
         ## cacheSolve function.
         
         getmatrix <- function () mtrx
         
-        ## Build index to recover the already calculated inverse using
+        ## Retrieve position to recover the already calculated inverse using
         ## cacheSolve function.
         
-        getindex <- function () index
+        getpos <- function () pos
         
         
-        list(getmatrix = getmatrix, getindex = getindex)
+        list(getmatrix = getmatrix, getpos = getpos)
 }
 
 
@@ -57,15 +58,17 @@ makeCacheMatrix <- function(x = matrix()) {
 ## calculates it if not previously calculated.
 
 cacheSolve <- function(x, ...) {
+        
+        pos <- x$getpos()
         mtrx <- x$getmatrix()
-        if(is.null(mtrx)) {
-                index <- x$getindex()
-                inv <- wi[index]
-                message("Getting cached data")
-                return(inv)
-        } else {
+        
+        if(is.na(wi[pos])) {
                 inv <- solve(mtrx)
-                wi[[length(wi) + 1]] <<- inv
+                wi[[pos]] <<- inv
+                inv
+        } else {
+                inv <- wi[pos]
+                message("Getting cached data")
                 inv
         }
 }
